@@ -1,77 +1,73 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import getImagesAPI from 'services/getImages-api';
 import { Button } from 'components/Button/Button';
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
-import { Modal } from 'components/Modal/Modal';
 import { Loader } from 'components/Loader/Loader';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import css from './ImageGallery.module.css'
 
 
-export function ImageGallery() {
-
-    const [searchQuery, setSearchQuery] = useState('');
+export function ImageGallery( {searchQuery} ) {
     const [page, setPage] = useState(1);
     const [images, setImages] = useState([]);
     const [error, setError] = useState(null);
     const [status, setStatus] = useState('idle');
     const [totalPages, setTotalPages] = useState(0);
-    const [showModal, setShowModal] = useState(false);
+ 
+    useEffect(() => {
+
+        if (!searchQuery) {
+            return
+        }
+
+        if (page === 1) {
+            setImages([]);
+        }
+        setStatus('pending')
+
+        getImagesAPI
+            .getImages(searchQuery, page)
+            .then(images => {
+                setImages(prevState =>
+                    [...prevState, ...images.hits]);
+                setStatus('resolved');
+                setTotalPages(Math.floor(images.totalHits / 12));
+            })
+            .catch(error => {
+                setError(error);
+                setStatus('rejected');
+            });
+            
+    }, [searchQuery, page]);
   
-    // componentDidUpdate(prevProps, prevState) {
-    //     const { page } = this.state;
-    //     const prevQuery = prevProps.searchQuery;
-    //     const nextQuery = this.props.searchQuery;
-
-    //     if (prevQuery !== nextQuery || prevState.page !== page) {
-    //         this.setState({ status: 'pending' });
-            
-    //          if (prevQuery !== nextQuery)  {
-    //         this.setState({page: 1})
-    //       }
-
-    //             getImagesAPI
-    //                 .getImages(nextQuery, page)
-    //                 .then(images => {
-    //                     this.setState(prevState => ({
-    //                         images: page === 1 ? images.hits : [...prevState.images, ...images.hits],
-    //                         status: 'resolved',
-    //                         totalPages: Math.floor(images.totalHits / 12),
-    //                     }));
-    //                 })
-    //                 .catch(error => this.setState({ error, status: 'rejected' }));
-            
-    //     } 
-
-    // }
 
 
     const btnLoadMore = () => {
     setPage(prevState =>  prevState + 1 );
     };
 
-    const toggleModal = () => {
-    setShowModal(!showModal);
-  };
+    
 
+  
+    
         
-        if (this.state.status === 'idle') {
+        if (status === 'idle') {
             console.log('start')
             return
         }
-        if (this.state.status === 'pending') {
+        if (status === 'pending') {
             console.log('load')
             return <Loader />     
         }
 
-        if (this.state.status === 'rejected') {
-            Notify.failure("Error!");
+        if (status === 'rejected') {
+            Notify.failure(error.message);
             return
 
         }
      
-        if (this.state.images.length === 0) {
+        if (images.length === 0) {
             return (
                 <div className={css.notifySorry}>
                     <h1>Sorry, there are no images matching your search query. Please try again.</h1>
@@ -79,24 +75,20 @@ export function ImageGallery() {
             )
         }   
 
-        if (this.state.status === 'resolved') {
+        if (status === 'resolved') {
             return (
                 <>
                     <ul className={css.gallery}>
-                        {this.state.images.map(image  => (
+                        {images.map(image  => (
                             <ImageGalleryItem
-                                    key={image.id}
-                                    item={image}
-                                    imageOpen={this.modalOpen}
-                                />
+                                key={image.id}
+                                item={image}
+
+                            />
                         ))}
                     </ul>
-
-                    { page <= totalPages && (<Button onClick={btnLoadMore}/>)}
+                    {page <= totalPages && (<Button onClick={btnLoadMore} />)}
                     
-                    {showModal && (
-                        <Modal modalOpen={toggleModal} modalClose={toggleModal}/>
-                    )}
                 </>
             )
         }
@@ -104,5 +96,5 @@ export function ImageGallery() {
 
 
 ImageGallery.propType = {
-  searchQuery: PropTypes.string.isRequired,
+    searchQuery: PropTypes.string.isRequired,
 };

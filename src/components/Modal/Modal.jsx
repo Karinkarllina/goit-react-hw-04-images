@@ -1,51 +1,44 @@
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
 import { createPortal } from 'react-dom';
 import css from './Modal.module.css'
 
 
 const modalRoot = document.querySelector('#modal-root');
 
-export class Modal extends Component { 
+export function Modal({ modalClose, children }) { 
 
-    componentDidMount() {
-        window.addEventListener('keydown', this.hendleEscClose)
-    }
+    
+    useEffect(() => {
 
-    componentWillUnmount() {
-        window.removeEventListener('keydown',  this.hendleEscClose )  
-    }
+        const hendleEscClose = event => {
+            if (event.code === 'Escape') {
+                modalClose()
+            }
+        }
 
-    hendleEscClose = event => {
-        if (event.code === 'Escape') {
-            this.props.modalClose()
+        window.addEventListener('keydown', hendleEscClose)
+        return () => window.removeEventListener('keydown', hendleEscClose);
+        
+    }, [modalClose]);
+    
+    
+    const hendleBackdropClose = event => {
+        if (event.target === event.currentTarget) {
+            modalClose()
         }
     }
-
-    hendleBackdropClose = event => {
-         if (event.target === event.currentTarget) {
-            this.props.modalClose()
-        }
-    }
-
-    render() {
-        const { largeImageURL, tags } = this.props.modalOpen;
-
+    
         return createPortal (
-            <div className={css.modalBackdrop} onClick={this.hendleBackdropClose}>
-                <div className={css.modalContent}>
-                    <img src={largeImageURL} alt={tags} loading="lazy" />
-                </div>
+            <div className={css.modalBackdrop} onClick={hendleBackdropClose}>
+                {children}
             </div>, 
             modalRoot
         );
-    }
+
 }
 
 Modal.propTypes = {
-    modalOpen: PropTypes.shape({
-        largeImageURL: PropTypes.string.isRequired,
-        tags: PropTypes.string.isRequired,
-    }),
     modalClose: PropTypes.func.isRequired,
+    children: PropTypes.node.isRequired,
 }

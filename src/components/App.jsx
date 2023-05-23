@@ -9,7 +9,7 @@ export function App() {
   const [searchQuery, setsearchQuery] = useState('');
 
   const handleSubmit = searchQuery => {
-    setsearchQuery({ searchQuery });
+    setsearchQuery(searchQuery);
   };
 
     return (
@@ -17,6 +17,7 @@ export function App() {
         <Searchbar onSubmit={handleSubmit} />
         <ImageGallery searchQuery={searchQuery}/>
       </div>
-    );
+  );
+  
 }
 
