@@ -8,8 +8,8 @@ import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import css from './ImageGallery.module.css'
 
 
-export function ImageGallery( {searchQuery} ) {
-    const [page, setPage] = useState(1);
+export function ImageGallery( {searchQuery, page, funcLoadMore} ) {
+ 
     const [images, setImages] = useState([]);
     const [error, setError] = useState(null);
     const [status, setStatus] = useState('idle');
@@ -24,6 +24,8 @@ export function ImageGallery( {searchQuery} ) {
         if (page === 1) {
             setImages([]);
         }
+
+
         setStatus('pending')
 
         getImagesAPI
@@ -43,9 +45,6 @@ export function ImageGallery( {searchQuery} ) {
   
 
 
-    const btnLoadMore = () => {
-    setPage(prevState =>  prevState + 1 );
-    };
 
     
 
@@ -87,7 +86,7 @@ export function ImageGallery( {searchQuery} ) {
                             />
                         ))}
                     </ul>
-                    {page <= totalPages && (<Button onClick={btnLoadMore} />)}
+                    {page <= totalPages && (<Button onClick={funcLoadMore} />)}
                     
                 </>
             )

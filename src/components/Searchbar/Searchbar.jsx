@@ -19,6 +19,7 @@ export function Searchbar({ onSubmit} ) {
             Notify.info('Please enter your request and try again');
             return 
         }
+        
         onSubmit(searchQuery);
     };
 
